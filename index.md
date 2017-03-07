@@ -1,6 +1,6 @@
 OS: Ubuntu 16.04 Desktop
 
-Spark Version: 2.0.2
+Spark Version: 2.1.0 stable
 
 Oracle VM VirtualBox
 
