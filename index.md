@@ -1,7 +1,10 @@
 OS: Ubuntu 16.04 Desktop
+
 Spark Version: 2.0.2
 
 Oracle VM VirtualBox
+
+This tutorial is to install the Spark 2.1.0 stable version on the Ubuntu 16.04.
 
 ## Install Spark on master
 
@@ -29,9 +32,11 @@ Contents of `hosts` file should be as,
 
 Replace the MASTER-IP with the IP address of master and similarly for slaves. 
 And, make sure you have the vim or you can use any editor.
+
 (Note: Comment the localhost already present in the hosts file if it gives problem)
 
 ## Configure SSH
+You need to configure ssh for password-less login from master to slaves and from all the slaves to master.
 
 ### Install OpenSSH
 Install openssh using following command as,
@@ -57,12 +62,12 @@ You can check whether password-less login is working or not by using following c
     $ ssh slave02
 
 
-## Install Spark 2.0.2 on Master and Slave (Worker) nodes
+## Install Spark 2.1.0 on Master and Slave (Worker) nodes
 
 You can either download from http://spark.apache.org/downloads.html or can directly download using wget command.
 
-    $ wget http://d3kbcqa49mib13.cloudfront.net/spark-2.0.2-bin-hadoop2.7.tgz  
-    $ tar xvf spark-2.0.2-bin-hadoop2.7.tgz
+    $ wget http://d3kbcqa49mib13.cloudfront.net/spark-2.1.0-bin-hadoop2.7.tgz
+	$ tar xvf spark-2.1.0-bin-hadoop2.7.tgz
 
 ### Configuration of .bashrc file
 Add the following lines to configure scala and spark in `.bashrc` file.
@@ -73,23 +78,26 @@ export SCALA_HOME=/usr/local/src/scala/scala-2.10.4
 export PATH=$SCALA_HOME/bin:$PATH
 
 #Spark
-export SPARK_HOME=/home/ubuntu/spark-2.0.2-bin-hadoop2.7
+export SPARK_HOME=/home/ubuntu/spark-2.1.0-bin-hadoop2.7
 export PATH=$SPARK_HOME/bin:$PATH
 ```
 
 ### Restart .bashrc configuration
 To restart the `.bashrc` configuration:
 
-    $. ~/.bashrc 
+    $ source ~/.bashrc 
 
 ## Configuring Spark configuration files:
 
+You need to configure `spark-defaults.conf`, `spark-env.sh` and `slaves` files on master node.
+
 ### Configure spark-defaults.conf
+You need to create the `spark-defaults.conf` file and update as, 
 
     $ cp spark-defaults.conf.template spark-defaults.conf
     $ vim spark-defaults.conf
 
-Edit `spark-defaults.conf` file with the following line
+Update the `spark-defaults.conf` file with the following line as,
 
     spark.master                     spark://master-pc:7077
 
@@ -105,11 +113,13 @@ export SPARK_LOCAL_IP=MASTER-IP
 
 ### Configure slaves file
 
-Add the list of slaves in this file as,
+Create/Update the `slave` file and add the list of slaves in slave file with `slave01`,  `slave02` as,
+
 ```
 slave01
 slave02
 ```
+
 Note: Name should be same as that added in the `/etc/hosts` file.
 
 ## Installation on Spark Worker nodes (Slaves)
@@ -119,35 +129,54 @@ Setup prequisities on all slaves as done in master nodes,
 - Entries to hosts file
 - Install scala and java
 
-Copy the downloaded spark file to all the slaves
+From the master node, you can directly secure copy the downloaded spark file to all the slaves as,
 
 ```
-$ scp spark-2.0.2-bin-hadoop2.7.tgz slave01:~
-$ scp spark-2.0.2-bin-hadoop2.7.tgz slave02:~
+$ scp spark-2.1.0-bin-hadoop2.7.tgz slave01:~
+$ scp spark-2.1.0-bin-hadoop2.7.tgz slave02:~
 ```
+Or, you could simply copy using your flash-drive or download as shown for the master node in the upper sections.
 
-Now ssh into the `slave01` and `slave02` separately to unzip the spark file by using following command,
 
-    $ tar xvf spark-2.0.2-bin-hadoop2.7.tgz
+Now ssh into the `slave01` and `slave02` from the `master` node separately to unzip the spark file by using following command,
 
-Configuration is all set.
+	$ ssh slave01
+
+Inside the slave01 node, use the tar command to extract compressed spark file as,
+    $ tar xvf spark-2.1.0-bin-hadoop2.7.tgz
+
+Similarly, repeat the process for slave02.
+
+Now, the configuration is all set.
 
 
 ## Running Spark Clusters
 
-### Start Spark master (Master node)
-    $ sbin/start-master.sh
+### Start Spark master (on Master node)
+In order to start the `master` node, you should run `start-master.sh` from the `sbin` directory inside your spark folder as,
+    
+    ~/spark-2.1.0-bin-hadoop2.7/sbin$ ./start-master.sh
 
-### Start Spark slaves (on Slave nodes)
-    ~/spark-2.0.2-bin-hadoop2.7/sbin$ ./start-slave.sh spark://master-pc:7077
+### Start Spark slaves (on Master node)
+In order to start the `slave` nodes, you should run `start-slaves.sh` from the `sbin` directory inside your spark folder as,
+    ~/spark-2.1.0-bin-hadoop2.7/sbin$ ./start-slaves.sh spark://master-pc:7077
 
 ### Check daemons on Master
+In order to check whether the configuration is set or not, you could use `jps` command as,
+
 ```
 $ jps
 Master
 ```
-### Check daemons on Slaves
+
+### Check daemons on Slave nodes
+In order to check whether the configuration is set or not, you could use `jps` on all the `slave` nodes command as, 
 ```
 $ jps
 Worker
 ```
+
+Now, once every looks good as mentioned above, you can verify whether your slaves are connecting properly with the master node, you can go to the following address in your web browser,
+
+	http://master:8080/
+
